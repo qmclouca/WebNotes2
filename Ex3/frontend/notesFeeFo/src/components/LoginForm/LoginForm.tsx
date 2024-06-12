@@ -1,27 +1,34 @@
-// src/components/LoginForm.tsx
+
 import React, { useState } from 'react';
 import { login } from '../../services/api';
+import { useAuth } from '../../AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-interface LoginFormProps {
-    onLogin: () => void;
-}
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+const LoginForm: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const { setIsAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async () => {
     try {
-      await login(username, password);
-      onLogin();
+      const response = await login(username, password);
+      console.log('Login response:', response);
+      localStorage.setItem('token', response.token);
+      localStorage.setItem('clientId', response.clientId.toString());
+      setIsAuthenticated(true);
+      console.log('Navigating to /notes');
+      navigate('/notes');
     } catch (error) {
       console.error('Login failed', error);
+      setIsAuthenticated(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
+      <h2>Login</h2>
       <input
         type="text"
         placeholder="Username"
@@ -34,8 +41,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
-      <button type="submit">Login</button>
-    </form>
+      <button onClick={handleLogin}>Login</button>
+    </div>
   );
 };
 

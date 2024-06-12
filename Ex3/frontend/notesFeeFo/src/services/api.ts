@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { AuthData } from '../Interfaces/AuthData';
 
 const API_URL = 'http://localhost:8080/';
 
 const api = axios.create({
-    headers: {"Access-Control-Allow-Origin": "*"},
+    headers: {"Access-Control-Allow-Origin": "*", "Content-Type": "application/json",},
     baseURL: API_URL,
 });
 
@@ -28,14 +29,15 @@ export interface AuthResponse {
   token: string;
 }
 
-export const login = async (username: string, password: string): Promise<AuthResponse> => {
-  const response = await api.post<AuthResponse>('/auth/authenticate', { username, password });
+export const login = async (username: string, password: string): Promise<AuthData> => {
+  const response = await api.post<AuthData>('/auth/authenticate', { username, password });
   localStorage.setItem('token', response.data.token);
+  localStorage.setItem('clientId', response.data.clientId.toString());
   return response.data;
 };
 
-export const getNotes = async (): Promise<Note[]> => {
-  const response = await api.get<Note[]>('api/notes');
+export const getNotes = async (clientId: number): Promise<Note[]> => {  
+  const response = await api.get<Note[]>(`/api/notes/${clientId}`);
   return response.data;
 };
 
